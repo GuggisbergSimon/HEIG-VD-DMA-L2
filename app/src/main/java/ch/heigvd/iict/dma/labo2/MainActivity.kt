@@ -15,6 +15,7 @@ import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.Observer
 import androidx.recyclerview.widget.LinearLayoutManager
 import ch.heigvd.iict.dma.labo2.databinding.ActivityMainBinding
+import ch.heigvd.iict.dma.labo2.models.PersistentBeacon
 import org.altbeacon.beacon.AltBeaconParser
 import org.altbeacon.beacon.Beacon
 import org.altbeacon.beacon.BeaconManager
@@ -49,19 +50,6 @@ class MainActivity : AppCompatActivity() {
         // observer will be called each time the monitored regionState changes (inside vs. outside region)
         beaconManager.getRegionViewModel(region).rangedBeacons.observe(this, rangingObserver)
         beaconManager.startRangingBeacons(region)
-
-    }
-    val rangingObserver = Observer<Collection<Beacon>> { beacons ->
-        Log.d(TAG, "Ranged: ${beacons.count()} beacons")
-        for (beacon: Beacon in beacons) {
-            if (listId3.contains(beacon.id3.toInt())) {
-                //TODO add to list of nearby beacons
-                beaconsViewModel.nearbyBeacons
-            }
-        }
-
-
-
 
         // check if bluetooth is enabled
         val bluetoothManager = getSystemService(Context.BLUETOOTH_SERVICE) as BluetoothManager
@@ -110,6 +98,29 @@ class MainActivity : AppCompatActivity() {
             beaconAdapter.items = nearbyBeacons
         }
 
+    }
+
+    val rangingObserver = Observer<Collection<Beacon>> { beacons ->
+        Log.d(TAG, "Ranged: ${beacons.count()} beacons")
+        val persistentBeacons = beacons.map { beacon ->
+            PersistentBeacon(
+                major = beacon.id1,
+                minor = beacon.id2,
+                uuid = beacon.serviceUuid,
+                rssi = beacon.rssi,
+                txPower = beacon.txPower,
+                distance = beacon.distance,
+            )
+        }
+        beaconsViewModel.updateBeacons(persistentBeacons)
+
+
+        for (beacon: Beacon in beacons) {
+            if (listId3.contains(beacon.id3.toInt())) {
+                //TODO add to list of nearby beacons
+                beaconsViewModel.nearbyBeacons
+            }
+        }
     }
 
     private val requestBeaconsPermissionLauncher = registerForActivityResult(ActivityResultContracts.RequestMultiplePermissions()) { permissions ->
