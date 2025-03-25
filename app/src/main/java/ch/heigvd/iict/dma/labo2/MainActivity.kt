@@ -6,13 +6,21 @@ import android.content.Context
 import android.os.Build
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
+import android.util.Log
 import android.view.View
 import android.widget.Toast
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.activity.viewModels
 import androidx.lifecycle.MutableLiveData
+import androidx.lifecycle.Observer
 import androidx.recyclerview.widget.LinearLayoutManager
 import ch.heigvd.iict.dma.labo2.databinding.ActivityMainBinding
+import org.altbeacon.beacon.AltBeaconParser
+import org.altbeacon.beacon.Beacon
+import org.altbeacon.beacon.BeaconManager
+import org.altbeacon.beacon.BeaconParser
+import org.altbeacon.beacon.BeaconRegion
+import org.altbeacon.beacon.service.BeaconService.TAG
 
 
 class MainActivity : AppCompatActivity() {
@@ -23,10 +31,37 @@ class MainActivity : AppCompatActivity() {
 
     private val permissionsGranted = MutableLiveData(false)
 
+    private val listId3 = arrayOf(46,73)
+
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         binding = ActivityMainBinding.inflate(layoutInflater)
         setContentView(binding.root)
+        val beaconManager = BeaconManager.getInstanceForApplication(this)
+        beaconManager.beaconParsers.add(
+            BeaconParser()
+                .setBeaconLayout("m:2-3=0215,i:4-19,i:20-21,i:22-23,p:24-24")
+        )
+        val region = BeaconRegion("wildcard altbeacon",             BeaconParser()
+            .setBeaconLayout("m:2-3=0215,i:4-19,i:20-21,i:22-23,p:24-24"), null, null, null)
+        // Set up a Live Data observer so this Activity can get ranging callbacks
+        // observer will be called each time the monitored regionState changes (inside vs. outside region)
+        beaconManager.getRegionViewModel(region).rangedBeacons.observe(this, rangingObserver)
+        beaconManager.startRangingBeacons(region)
+
+    }
+    val rangingObserver = Observer<Collection<Beacon>> { beacons ->
+        Log.d(TAG, "Ranged: ${beacons.count()} beacons")
+        for (beacon: Beacon in beacons) {
+            if (listId3.contains(beacon.id3.toInt())) {
+                //TODO add to list of nearby beacons
+                beaconsViewModel.nearbyBeacons
+            }
+        }
+
+
+
 
         // check if bluetooth is enabled
         val bluetoothManager = getSystemService(Context.BLUETOOTH_SERVICE) as BluetoothManager
@@ -58,7 +93,7 @@ class MainActivity : AppCompatActivity() {
         // update views
         beaconsViewModel.closestBeacon.observe(this) {beacon ->
             if(beacon != null) {
-                binding.location.text = "TODO"
+                binding.location.text = beacon.minor.toString()
             } else {
                 binding.location.text = getString(R.string.no_beacons)
             }
