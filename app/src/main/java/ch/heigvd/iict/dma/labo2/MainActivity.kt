@@ -22,6 +22,7 @@ import org.altbeacon.beacon.BeaconManager
 import org.altbeacon.beacon.BeaconParser
 import org.altbeacon.beacon.BeaconRegion
 import org.altbeacon.beacon.service.BeaconService.TAG
+import java.util.UUID
 
 
 class MainActivity : AppCompatActivity() {
@@ -104,23 +105,15 @@ class MainActivity : AppCompatActivity() {
         Log.d(TAG, "Ranged: ${beacons.count()} beacons")
         val persistentBeacons = beacons.map { beacon ->
             PersistentBeacon(
-                major = beacon.id1,
-                minor = beacon.id2,
-                uuid = beacon.serviceUuid,
+                uuid = UUID.fromString(beacon.id1.toString()),
+                major = beacon.id2.toInt(),
+                minor = beacon.id3.toInt(),
                 rssi = beacon.rssi,
                 txPower = beacon.txPower,
                 distance = beacon.distance,
             )
         }
         beaconsViewModel.updateBeacons(persistentBeacons)
-
-
-        for (beacon: Beacon in beacons) {
-            if (listId3.contains(beacon.id3.toInt())) {
-                //TODO add to list of nearby beacons
-                beaconsViewModel.nearbyBeacons
-            }
-        }
     }
 
     private val requestBeaconsPermissionLauncher = registerForActivityResult(ActivityResultContracts.RequestMultiplePermissions()) { permissions ->
