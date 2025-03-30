@@ -36,10 +36,11 @@ class BeaconsViewModel : ViewModel() {
     val closestBeacon : LiveData<PersistentBeacon?> get() = _closestBeacon
 
     fun updateBeacons(beacons: List<PersistentBeacon>) {
+        val sortedBeacons = beacons.sortedBy { it.distance }
         val currentList = _nearbyBeacons.value ?: mutableListOf()
         currentList.clear()
-        currentList.addAll(beacons)
+        currentList.addAll(sortedBeacons)
         _nearbyBeacons.postValue(currentList)
-        _closestBeacon.postValue(beacons.minByOrNull { it.distance })
+        _closestBeacon.postValue(sortedBeacons.firstOrNull())
     }
 }

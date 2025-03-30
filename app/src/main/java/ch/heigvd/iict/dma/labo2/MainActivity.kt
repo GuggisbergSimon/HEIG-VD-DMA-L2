@@ -136,5 +136,4 @@ class MainActivity : AppCompatActivity() {
                 permissionsGranted.postValue(false)
             }
         }
-
 }
