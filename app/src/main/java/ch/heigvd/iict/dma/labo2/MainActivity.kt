@@ -103,6 +103,7 @@ class MainActivity : AppCompatActivity() {
 
     val rangingObserver = Observer<Collection<Beacon>> { beacons ->
         Log.d(TAG, "Ranged: ${beacons.count()} beacons")
+        beacons.filter { it.id3.toInt() in listId3 }
         val persistentBeacons = beacons.map { beacon ->
             PersistentBeacon(
                 uuid = UUID.fromString(beacon.id1.toString()),
