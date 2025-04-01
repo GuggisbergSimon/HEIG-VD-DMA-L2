@@ -1,6 +1,28 @@
 # HEIG-VD-DMA-L2
 
+Authors :
+
+- Patrick Furrer
+- Simon Guggisberg
+- Jonas Troeltsch
+
 ## Partie 1
+
+### Implémentation
+
+Nous filtrons d'abord les balises détectées pour ne garder que celles qui nous concernent.
+Puis nous créons des balises persistentes selon les valeurs des beacons correspondants.
+Enfin, nous les passons au viewModel pour qu'il puisse mettre à jour la liste.
+
+La liste est mise à jour en supprimant les balises qui ne sont plus valables (qui n'ont pas été vues
+depuis plus de 10 secondes) et en ajoutant les nouvelles balises détectées.
+Les valeurs des balises existantes sont également mises à jour (uniquement celles-ci sujettes à
+variations telle que rssi, txPower, distance).
+Puis la liste est triée, selon la distance, de la plus proche à la plus éloignée, avec le beacon le
+plus proche en tête de liste.
+
+De plus, toutes les 30 secondes, les balises qui ne sont plus valables (qui n'ont pas été vues
+depuis plus de 10 secondes) sont purgées de la liste.
 
 ### Questions d’approfondissement
 
@@ -121,20 +143,22 @@ beacons.filter { it.id3.toInt() in listId3 }
 Nous pouvons déterminer notre position à la balise le plus proche et en l'associant à une
 position pré-enregistrée dans une base de données.
 
-Dans notre implémentation, nous avons décidé de créer une Map qui associe un ID mineur de balise à une
-chambre :
+Dans notre implémentation, nous avons décidé de créer une Map qui associe un ID mineur de balise à
+une chambre :
 
 ```kotlin
 val locationMap = mapOf(
-        46 to "Salon (46)",
-        73 to "Couloir (73)",
-    )
+    46 to "Salon (46)",
+    73 to "Couloir (73)",
+)
 ```
 
 Une possible amélioration serait d'utiliser un algorithme de trilatération, qui permettrait de
-déterminer une position plus précise en utilisant plusieurs balises à la fois. 
+déterminer une position plus précise en utilisant plusieurs balises à la fois.
+Ceci demanderait de connaître la position précise de chaque balise et de représenter les points dans
+un espace 3D, ce qui sort du cadre de ce laboratoire de notre point de vue.
 
-Un autre paramètre pertinent serait la direction de la balise grace à l'angle (BLE >v5.1)
+Un autre paramètre pertinent serait la direction de la balise grâce à l'angle (BLE >v5.1)
 
 
 > 2.1.2 Les iBeacons sont conçus pour permettre du positionnement en intérieur.
@@ -143,13 +167,15 @@ Un autre paramètre pertinent serait la direction de la balise grace à l'angle 
 > Est-ce que vous voyez des limitations qui rendraient difficile leur utilisation pour certaines
 > applications ?
 
-Les iBeacons sont adaptés pour des applications de localisation en intérieur, comme par exemple
+Les iBeacons sont adaptés pour des applications de localisation en intérieur, comme par exemple :
+
 - La navigation dans un bâtiment (ex. hôpital, musée, etc.) où l'on peut se déplacer librement et
   avoir besoin d'informations contextuelles sur les lieux.
 - Pour des applications de marketing de proximité, où les utilisateurs peuvent recevoir des
   notifications contextuelles en fonction de leur position dans un magasin ou un centre commercial.
 
 Les limitations principales sont :
+
 - La précision de la localisation, qui peut varier en fonction de l'environnement (ex. murs, objets
   métalliques, etc.)
 - La portée limitée des iBeacons, qui peut rendre difficile la localisation dans de grands espaces
