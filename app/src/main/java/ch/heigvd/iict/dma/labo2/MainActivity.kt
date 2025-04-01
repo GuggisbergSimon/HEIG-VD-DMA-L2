@@ -4,19 +4,18 @@ import android.Manifest
 import android.bluetooth.BluetoothManager
 import android.content.Context
 import android.os.Build
-import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
 import android.util.Log
 import android.view.View
 import android.widget.Toast
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.activity.viewModels
+import androidx.appcompat.app.AppCompatActivity
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.Observer
 import androidx.recyclerview.widget.LinearLayoutManager
 import ch.heigvd.iict.dma.labo2.databinding.ActivityMainBinding
 import ch.heigvd.iict.dma.labo2.models.PersistentBeacon
-import org.altbeacon.beacon.AltBeaconParser
 import org.altbeacon.beacon.Beacon
 import org.altbeacon.beacon.BeaconManager
 import org.altbeacon.beacon.BeaconParser
@@ -84,7 +83,7 @@ class MainActivity : AppCompatActivity() {
         // update views
         beaconsViewModel.closestBeacon.observe(this) {beacon ->
             if(beacon != null) {
-                binding.location.text = beacon.minor.toString()
+                binding.location.text = beaconsViewModel.locationMap[beacon.minor] ?: getString(R.string.unknown_location)
             } else {
                 binding.location.text = getString(R.string.no_beacons)
             }

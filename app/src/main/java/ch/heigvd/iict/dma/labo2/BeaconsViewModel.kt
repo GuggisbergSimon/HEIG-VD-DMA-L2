@@ -83,4 +83,9 @@ class BeaconsViewModel : ViewModel() {
             _closestBeacon.postValue(if (currentList.isNotEmpty()) currentList[0] else null)
         }
     }
+
+    val locationMap = mapOf(
+        46 to "Salon (46)",
+        73 to "Couloir (73)",
+    )
 }
