@@ -35,6 +35,8 @@ class MainActivity : AppCompatActivity() {
 
     private val listId3 = arrayOf(46,73)
 
+    private val BEACON_CHECK_PERSISTENCE_TIME = 30 * 1000L // 30 seconds
+
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -121,14 +123,14 @@ class MainActivity : AppCompatActivity() {
         override fun run() {
             beaconsViewModel.clearExpiredBeacons()
             // Check every 30 seconds
-            binding.root.postDelayed(this, 30000)
+            binding.root.postDelayed(this, BEACON_CHECK_PERSISTENCE_TIME)
         }
     }
 
     override fun onResume() {
         super.onResume()
         // Start regular checks for expired beacons
-        binding.root.postDelayed(expiryCheckRunnable, 30000)
+        binding.root.postDelayed(expiryCheckRunnable, BEACON_CHECK_PERSISTENCE_TIME)
     }
 
     override fun onPause() {

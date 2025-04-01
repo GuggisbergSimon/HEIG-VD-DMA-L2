@@ -30,7 +30,7 @@ class BeaconsViewModel : ViewModel() {
      *  La solution présentée ici est de réaliser une projection d'une MutableList vers une List et
      *  une copie profonde de toutes les instances de PersistentBeacon qu'elle contient.
      */
-    private val BEACON_PERSISTENCE_TIME = 1 * 60 * 1000L // 1 minute
+    private val BEACON_PERSISTENCE_TIME = 10 * 1000L // 10 seconds
     val nearbyBeacons : LiveData<List<PersistentBeacon>> = _nearbyBeacons.map { l -> l.toList().map { el -> el.copy() } }
     private val _closestBeacon = MutableLiveData<PersistentBeacon?>(null)
     val closestBeacon : LiveData<PersistentBeacon?> get() = _closestBeacon

@@ -9,14 +9,21 @@
 > Que faut-il mettre en place pour permettre de « lisser » les annonces et ne pas perdre
 > momentanément certaines balises ?
 
-TODO répondre, pas compris la question, vérifier en présence/tester
+Non, toutes les balises ne sont pas présentes à chaque fois.
+Pour remédier à ce problème, il convient de rendre les `PersistentBeacon` persistants.
+Pour ce faire, nous avons eu deux idées d'implémentation :
+
+- un timeout de x minutes pour chaque, à la suite duquel, si il n'a pas été entre temps reporté par
+  une nouvelle détection du Beacon, le Beacon se retrouvera supprimé de la liste.
+- une valeur `lastSeen` qui permet de tracer le dernier moment où le Beacon a été détecté.
+  De plus, toutes les x minutes, on va filtrer la liste des Beacons pour ne garder que ceux
+  correspondant au critère, càd celles qui datent de moins de y minutes.
 
 > 1.1.2 Nous souhaitons effectuer un positionnement en arrière-plan, à quel moment faut-il démarrer
 > et éteindre le monitoring des balises ?
 > Sans le mettre en place, que faudrait-il faire pour pouvoir continuer le monitoring alors que
 > l’activité n’est plus active ?
 
-TODO check première partie, pas sûr...
 Le démarrage et l'arrêt du monitoring des balises se fait dans les méthodes `onCreate` et
 `onDestroy`, respectivement.
 
@@ -25,6 +32,7 @@ installée dans la mémoire interne (pas sur la carte SD).
 Ensuite, le monitoring aura lieu en background, même après reboot du téléphone.
 
 Extraits de la documentation expliquant l'implémentation d'une telle fonctionnalité :
+
 ```xml
 
 <application android:name="com.example.MyApplicationName" android:allowBackup="true"
