@@ -30,17 +30,57 @@ class BeaconsViewModel : ViewModel() {
      *  La solution présentée ici est de réaliser une projection d'une MutableList vers une List et
      *  une copie profonde de toutes les instances de PersistentBeacon qu'elle contient.
      */
+    private val BEACON_PERSISTENCE_TIME = 1 * 60 * 1000L // 1 minute
     val nearbyBeacons : LiveData<List<PersistentBeacon>> = _nearbyBeacons.map { l -> l.toList().map { el -> el.copy() } }
-
     private val _closestBeacon = MutableLiveData<PersistentBeacon?>(null)
     val closestBeacon : LiveData<PersistentBeacon?> get() = _closestBeacon
 
     fun updateBeacons(beacons: List<PersistentBeacon>) {
-        val sortedBeacons = beacons.sortedBy { it.distance }
         val currentList = _nearbyBeacons.value ?: mutableListOf()
-        currentList.clear()
-        currentList.addAll(sortedBeacons)
+        val currentTime = System.currentTimeMillis()
+
+        // Update existing beacons or add new ones
+        beacons.forEach { newBeacon ->
+            // Try to find existing beacon with same UUID, major, minor
+            val existingBeaconIndex = currentList.indexOfFirst {
+                it.uuid == newBeacon.uuid && it.major == newBeacon.major && it.minor == newBeacon.minor
+            }
+
+            if (existingBeaconIndex >= 0) {
+                // Update existing beacon
+                val existingBeacon = currentList[existingBeaconIndex]
+                existingBeacon.rssi = newBeacon.rssi
+                existingBeacon.txPower = newBeacon.txPower
+                existingBeacon.distance = newBeacon.distance
+                existingBeacon.lastSeen = currentTime
+            } else {
+                // Add new beacon with current timestamp
+                currentList.add(newBeacon.copy(lastSeen = currentTime))
+            }
+        }
+
+        // Remove beacons that haven't been seen for BEACON_PERSISTENCE_TIME
+        currentList.removeAll { (currentTime - it.lastSeen) > BEACON_PERSISTENCE_TIME }
+
+        // Sort by distance
+        currentList.sortBy { it.distance }
+
         _nearbyBeacons.postValue(currentList)
-        _closestBeacon.postValue(sortedBeacons.firstOrNull())
+        _closestBeacon.postValue(if (currentList.isNotEmpty()) currentList[0] else null)
+    }
+
+    fun clearExpiredBeacons() {
+        val currentList = _nearbyBeacons.value ?: mutableListOf()
+        val currentTime = System.currentTimeMillis()
+
+        // Remove beacons that haven't been seen for BEACON_PERSISTENCE_TIME
+        val hadBeacons = currentList.isNotEmpty()
+        currentList.removeAll { (currentTime - it.lastSeen) > BEACON_PERSISTENCE_TIME }
+        currentList.sortBy { it.distance }
+
+        if (hadBeacons) {
+            _nearbyBeacons.postValue(currentList)
+            _closestBeacon.postValue(if (currentList.isNotEmpty()) currentList[0] else null)
+        }
     }
 }

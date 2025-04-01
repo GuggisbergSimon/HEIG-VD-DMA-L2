@@ -103,8 +103,8 @@ class MainActivity : AppCompatActivity() {
 
     val rangingObserver = Observer<Collection<Beacon>> { beacons ->
         Log.d(TAG, "Ranged: ${beacons.count()} beacons")
-        beacons.filter { it.id3.toInt() in listId3 }
-        val persistentBeacons = beacons.map { beacon ->
+        val filteredBeacons = beacons.filter { it.id3.toInt() in listId3 }
+        val persistentBeacons = filteredBeacons.map { beacon ->
             PersistentBeacon(
                 uuid = UUID.fromString(beacon.id1.toString()),
                 major = beacon.id2.toInt(),
@@ -115,6 +115,26 @@ class MainActivity : AppCompatActivity() {
             )
         }
         beaconsViewModel.updateBeacons(persistentBeacons)
+    }
+
+    private val expiryCheckRunnable = object : Runnable {
+        override fun run() {
+            beaconsViewModel.clearExpiredBeacons()
+            // Check every 30 seconds
+            binding.root.postDelayed(this, 30000)
+        }
+    }
+
+    override fun onResume() {
+        super.onResume()
+        // Start regular checks for expired beacons
+        binding.root.postDelayed(expiryCheckRunnable, 30000)
+    }
+
+    override fun onPause() {
+        super.onPause()
+        // Stop checking for expired beacons when activity is not visible
+        binding.root.removeCallbacks(expiryCheckRunnable)
     }
 
     private val requestBeaconsPermissionLauncher = registerForActivityResult(ActivityResultContracts.RequestMultiplePermissions()) { permissions ->

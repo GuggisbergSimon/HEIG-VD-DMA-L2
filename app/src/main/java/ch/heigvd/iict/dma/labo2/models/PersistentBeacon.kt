@@ -13,7 +13,8 @@ data class PersistentBeacon(
     var uuid: UUID,
     var rssi : Int,
     var txPower : Int,
-    var distance : Double) {
+    var distance : Double,
+    var lastSeen: Long = System.currentTimeMillis()) {
 
     companion object {
         private var nextId = 0L
@@ -39,7 +40,8 @@ class PersistentBeaconDiffCallback(private val oldList : List<PersistentBeacon>,
                 old.uuid  == new.uuid &&
                 old.rssi  == new.rssi &&
                 old.txPower  == new.txPower &&
-                old.distance == new.distance
+                old.distance == new.distance &&
+                old.lastSeen == new.lastSeen
     }
 
 }
