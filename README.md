@@ -118,8 +118,38 @@ beacons.filter { it.id3.toInt() in listId3 }
 > Est-ce uniquement basé sur notion de proximité étudiée dans la question 1.1.3, selon vous est-ce
 > que d’autres paramètres peuvent être pertinents ?
 
+Nous pouvons déterminer notre position à la balise le plus proche et en l'associant à une
+position pré-enregistrée dans une base de données.
+
+Dans notre implémentation, nous avons décidé de créer une Map qui associe un ID mineur de balise à une
+chambre :
+
+```kotlin
+val locationMap = mapOf(
+        46 to "Salon (46)",
+        73 to "Couloir (73)",
+    )
+```
+
+Une possible amélioration serait d'utiliser un algorithme de trilatération, qui permettrait de
+déterminer une position plus précise en utilisant plusieurs balises à la fois. 
+
+Un autre paramètre pertinent serait la direction de la balise grace à l'angle (BLE >v5.1)
+
+
 > 2.1.2 Les iBeacons sont conçus pour permettre du positionnement en intérieur.
 > D’après l’expérience que vous avez acquise sur cette technologie dans ce laboratoire, quels sont
 > les cas d’utilisation pour lesquels les iBeacons sont pleinement adaptés (minimum deux) ?
 > Est-ce que vous voyez des limitations qui rendraient difficile leur utilisation pour certaines
 > applications ?
+
+Les iBeacons sont adaptés pour des applications de localisation en intérieur, comme par exemple
+- La navigation dans un bâtiment (ex. hôpital, musée, etc.) où l'on peut se déplacer librement et
+  avoir besoin d'informations contextuelles sur les lieux.
+- Pour des applications de marketing de proximité, où les utilisateurs peuvent recevoir des
+  notifications contextuelles en fonction de leur position dans un magasin ou un centre commercial.
+
+Les limitations principales sont :
+- La précision de la localisation, qui peut varier en fonction de l'environnement (ex. murs, objets
+  métalliques, etc.)
+- La portée limitée des iBeacons, qui peut rendre difficile la localisation dans de grands espaces
